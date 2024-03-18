@@ -7,6 +7,7 @@ const siteName = '都道府県カウンター';
 const description = '都道府県ごとのカウントを数えるアプリケーション';
 const url = 'https://prefectures-count-app.vercel.app/';
 export const metadata = {
+  metadataBase: new URL('https://prefectures-count-app.vercel.app/'),
   title: siteName,
   description,
   openGraph: {
