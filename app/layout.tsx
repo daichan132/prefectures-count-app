@@ -18,6 +18,13 @@ export default function RootLayout({ children }: { children: any }) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
+        <meta property="og:title" content={metadata.title} />
+        <meta property="og:description" content={metadata.description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://prefectures-count-app.vercel.app/" />
+        <meta property="og:image" content="app-image.png" />
+        <meta property="og:site_name" content={metadata.title} />
+        <meta property="og:locale" content="ja_JP" />
       </head>
       <body>
         <MantineProvider theme={theme}>{children}</MantineProvider>
