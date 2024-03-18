@@ -10,7 +10,7 @@ import { Feature } from '../../types';
 interface JapanMapProps {
   initialCountData: Record<string, number>;
   color: string;
-  onChange?: (countData: Record<string, number>) => void;
+  onChange?: (name: string, count: number) => void;
 }
 export const JapanMap = React.memo((
   { initialCountData,
@@ -22,12 +22,16 @@ export const JapanMap = React.memo((
   const countDataRef = useRef(initialCountData);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
-  const updateCount = useCallback((name: string) => {
+  const updateCount = (name: string, increment = true) => {
     const countData = countDataRef.current;
     if (!countData[name]) countData[name] = 0;
-    countData[name] += 1;
-    onChange?.(countData);
-  }, []);
+    if (increment) {
+      countData[name] += 1;
+    } else {
+      countData[name] = Math.max(0, countData[name] - 1); // Ensure the count doesn't go below 0
+    }
+    onChange?.(name, countData[name]);
+  };
 
   async function main() {
     const width = mapContainerRef.current?.offsetWidth || 0;
@@ -89,6 +93,27 @@ export const JapanMap = React.memo((
           labelGroup.select('#label-text').text(newLabel);
 
           // テキストサイズに基づいて矩形サイズを再調整（必要に応じて）
+          const textElementNode = labelGroup.select('#label-text').node() as SVGGraphicsElement;
+          const textSize = textElementNode?.getBBox();
+          labelGroup.select('#label-rect')
+            .attr('x', textSize.x - 5)
+            .attr('y', textSize.y)
+            .attr('width', textSize.width + 10)
+            .attr('height', textSize.height + 4);
+        }
+      })
+      .on('contextmenu', (event: MouseEvent, d: any) => {
+        const name = d.properties.name.toLowerCase();
+        updateCount(name, false);
+        d3.select(event.currentTarget as d3.BaseType)
+          .attr('fill-opacity', () => {
+            const count = countDataRef.current[name];
+            return count > 0 ? count * 0.05 : 0;
+          });
+        const labelGroup = d3.select('#label-group');
+        if (!labelGroup.empty()) {
+          const newLabel = `${d.properties.name_ja}(${countDataRef.current[name]}人)`;
+          labelGroup.select('#label-text').text(newLabel);
           const textElementNode = labelGroup.select('#label-text').node() as SVGGraphicsElement;
           const textSize = textElementNode?.getBBox();
           labelGroup.select('#label-rect')
@@ -185,6 +210,17 @@ export const JapanMap = React.memo((
     // eslint-disable-next-line consistent-return
     return () => cleanup();
   }, [color, mounted, cleanup, viewportSize]);
+
+  useEffect(() => {
+    const mapContainer = mapContainerRef.current;
+    const suppressContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
+    };
+    mapContainer?.addEventListener('contextmenu', suppressContextMenu);
+    return () => {
+      mapContainer?.removeEventListener('contextmenu', suppressContextMenu);
+    };
+  }, []);
 
   return (
     <div ref={mapContainerRef} id="map-container" style={{ width: '100%', height: '100%' }} />
