@@ -11691,6 +11691,7 @@ __metadata:
     eslint-plugin-testing-library: "npm:^6.2.0"
     jest: "npm:^29.7.0"
     jest-environment-jsdom: "npm:^29.7.0"
+    lodash: "npm:^4.17.21"
     next: "npm:14.1.3"
     postcss: "npm:^8.4.36"
     postcss-preset-mantine: "npm:1.13.0"

@@ -2,16 +2,23 @@
 
 import React, { useCallback, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import { useViewportSize } from '@mantine/hooks';
 import geoJson from '../../assets/japan.json';
 import { useMounted } from '../../hooks/useMounted';
 import { Feature } from '../../types';
 
 interface JapanMapProps {
   initialCountData: Record<string, number>;
+  color: string;
+  onChange?: (countData: Record<string, number>) => void;
 }
 export const JapanMap = React.memo((
-  { initialCountData }: JapanMapProps) => {
+  { initialCountData,
+    color,
+    onChange,
+  }: JapanMapProps) => {
   const mounted = useMounted();
+  const viewportSize = useViewportSize();
   const countDataRef = useRef(initialCountData);
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
@@ -19,14 +26,14 @@ export const JapanMap = React.memo((
     const countData = countDataRef.current;
     if (!countData[name]) countData[name] = 0;
     countData[name] += 1;
+    onChange?.(countData);
   }, []);
 
   async function main() {
     const width = mapContainerRef.current?.offsetWidth || 0;
     const height = mapContainerRef.current?.offsetHeight || 0;
     const centerPos: [number, number] = [137.0, 38.2]; // 地図のセンター位置
-    const scale = 1000 * (Math.min(width, height) / 500);
-    const color = '#2566CC'; // 地図の色
+    const scale = 1200 * (Math.min(width, height) / 500);
 
     // 地図設定
     const projection = d3
@@ -53,8 +60,8 @@ export const JapanMap = React.memo((
       .enter()
       .append('path')
       .attr('d', (d: any) => path(d))
-      .attr('stroke', '#666')
-      .attr('stroke-width', 0.25)
+      .attr('stroke', '#000000')
+      .attr('stroke-width', 0.3)
       .attr('fill', color)
       .attr('cursor', 'pointer')
       .attr('fill-opacity', (d: any) => {
@@ -127,7 +134,8 @@ export const JapanMap = React.memo((
           .attr('width', textSize.width + padding.x * 2)
           .attr('height', textSize.height + padding.y * 2);
 
-        d3.select(this).attr('stroke-width', '1');
+        d3.select(this).attr('stroke-width', '3');
+        d3.select(this).attr('stroke', color);
       })
       .on('mousemove', (event: MouseEvent) => {
         // テキストのサイズ情報を取得
@@ -149,6 +157,7 @@ export const JapanMap = React.memo((
         svg.select('#label-group').remove();
         d3.select(this).attr('fill', color);
         d3.select(this).attr('stroke-width', '0.25');
+        d3.select(this).attr('stroke', 'black');
       });
   }
 
@@ -161,6 +170,21 @@ export const JapanMap = React.memo((
       if (target) target.innerHTML = '';
     };
   }, [mounted]);
+
+  const cleanup = useCallback(() => {
+    const target = document.getElementById('map-container');
+    if (target) target.innerHTML = '';
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    cleanup();
+    (async () => {
+      await main();
+    })();
+    // eslint-disable-next-line consistent-return
+    return () => cleanup();
+  }, [color, mounted, cleanup, viewportSize]);
 
   return (
     <div ref={mapContainerRef} id="map-container" style={{ width: '100%', height: '100%' }} />
