@@ -25,6 +25,7 @@ export default function RootLayout({ children }: { children: any }) {
         <meta property="og:image" content="app-image.png" />
         <meta property="og:site_name" content={metadata.title} />
         <meta property="og:locale" content="ja_JP" />
+        <meta name="twitter:card" content="app" />
       </head>
       <body>
         <MantineProvider theme={theme}>{children}</MantineProvider>
