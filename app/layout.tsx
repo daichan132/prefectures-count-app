@@ -26,6 +26,12 @@ export default function RootLayout({ children }: { children: any }) {
         <meta property="og:site_name" content={metadata.title} />
         <meta property="og:locale" content="ja_JP" />
         <meta name="twitter:card" content="summary" />
+        {/* <meta name="twitter:site" content="@twitter" />
+        <meta name="twitter:creator" content="@twitter" /> */}
+        <meta name="twitter:url" content="https://prefectures-count-app.vercel.app/" />
+        <meta name="twitter:title" content={metadata.title} />
+        <meta name="twitter:description" content={metadata.description} />
+        <meta name="twitter:image" content="app-image.png" />
       </head>
       <body>
         <MantineProvider theme={theme}>{children}</MantineProvider>
