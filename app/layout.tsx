@@ -3,9 +3,28 @@ import React from 'react';
 import { MantineProvider, ColorSchemeScript } from '@mantine/core';
 import { theme } from '../theme';
 
+const siteName = '都道府県カウンター';
+const description = '都道府県ごとのカウントを数えるアプリケーション';
+const url = 'https://prefectures-count-app.vercel.app/';
 export const metadata = {
-  title: '都道府県カウンター',
-  description: '都道府県ごとのカウントを数えるアプリケーション',
+  title: siteName,
+  description,
+  openGraph: {
+    title: siteName,
+    description,
+    url,
+    siteName,
+    locale: 'ja_JP',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteName,
+    description,
+  },
+  alternates: {
+    canonical: url,
+  },
 };
 
 export default function RootLayout({ children }: { children: any }) {
@@ -18,20 +37,6 @@ export default function RootLayout({ children }: { children: any }) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
-        <meta property="og:title" content={metadata.title} />
-        <meta property="og:description" content={metadata.description} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://prefectures-count-app.vercel.app/" />
-        <meta property="og:image" content="<generated>" />
-        <meta property="og:site_name" content={metadata.title} />
-        <meta property="og:locale" content="ja_JP" />
-        <meta name="twitter:card" content="summary" />
-        {/* <meta name="twitter:site" content="@twitter" />
-        <meta name="twitter:creator" content="@twitter" /> */}
-        <meta name="twitter:url" content="https://prefectures-count-app.vercel.app/" />
-        <meta name="twitter:title" content={metadata.title} />
-        <meta name="twitter:description" content={metadata.description} />
-        <meta name="twitter:image" content="<generated>" />
       </head>
       <body>
         <MantineProvider theme={theme}>{children}</MantineProvider>
