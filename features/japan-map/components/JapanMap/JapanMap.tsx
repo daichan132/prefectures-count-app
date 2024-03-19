@@ -146,8 +146,6 @@ export const JapanMap = React.memo((
         const rectElement = group
           .append('rect')
           .attr('id', 'label-rect')
-          .attr('stroke', '#666')
-          .attr('stroke-width', 0.5)
           .attr('fill', '#fff');
 
         // テキストを追加
@@ -172,7 +170,7 @@ export const JapanMap = React.memo((
           .attr('width', textSize.width + padding.x * 2)
           .attr('height', textSize.height + padding.y * 2);
 
-        d3.select(this).attr('stroke-width', '3');
+        d3.select(this).attr('stroke-width', '2');
         d3.select(this).attr('stroke', '#666');
       })
       .on('mousemove', (event: MouseEvent) => {
