@@ -157,18 +157,14 @@ export const JapanMap = React.memo((
           .text(label);
 
         // テキストのサイズから矩形のサイズを調整
-        const padding = {
-          x: 5,
-          y: 0,
-        };
         const textElementNode = textElement.node();
         if (!textElementNode) return;
         const textSize = textElementNode.getBBox();
         rectElement
-          .attr('x', textSize.x - padding.x)
-          .attr('y', textSize.y - padding.y)
-          .attr('width', textSize.width + padding.x * 2)
-          .attr('height', textSize.height + padding.y * 2);
+          .attr('x', textSize.x - 5)
+          .attr('y', textSize.y)
+          .attr('width', textSize.width + 10)
+          .attr('height', textSize.height + 4);
 
         d3.select(this).attr('stroke-width', '2');
         d3.select(this).attr('stroke', '#666');
