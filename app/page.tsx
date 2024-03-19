@@ -1,12 +1,14 @@
 'use client';
 
-import { AppShell, Blockquote, Center, ColorInput, Stack, Text } from '@mantine/core';
+import { AppShell, Blockquote, Center, ColorInput, NumberInput, Stack, Switch, Text } from '@mantine/core';
 import { useState } from 'react';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { JapanCountTable, JapanMap } from '@/features/japan-map';
 
 export default function HomePage() {
-  const [color, setColor] = useState('#eea4a9');
+  const [color, setColor] = useState('#f06595');
+  const [maxCount, setMaxCount] = useState<string | number>(10);
+  const [checked, setChecked] = useState(false);
   const [countData, setCountData] = useState<Record<string, number>>(
     {
       hokkaido: 0,
@@ -77,7 +79,19 @@ export default function HomePage() {
             label="テーマカラー"
             value={color}
             onChange={setColor} />
-          <JapanCountTable countData={countData} />
+          <NumberInput
+            label="色が濃くなる最大カウント"
+            value={maxCount}
+            min={1}
+            onChange={setMaxCount}
+          />
+          <Switch
+            py="xs"
+            checked={checked}
+            onChange={(event) => setChecked(event.currentTarget.checked)}
+            label="カウントが0の県を目立たせる"
+          />
+          <JapanCountTable countData={countData} hilightZeroCount={checked} />
         </Stack>
       </AppShell.Navbar>
       <AppShell.Main>
@@ -85,6 +99,8 @@ export default function HomePage() {
           <JapanMap
             initialCountData={countData}
             color={color}
+            maxCount={maxCount as number}
+            highlightZeroCount={checked}
             onChange={(name, count) => {
               setCountData((prev) => ({ ...prev, [name]: count }));
             }} />

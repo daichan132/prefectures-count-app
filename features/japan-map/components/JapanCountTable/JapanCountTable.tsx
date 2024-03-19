@@ -6,9 +6,10 @@ import geoJson from '../../assets/japan.json';
 
 interface JapanCountTableProps {
   countData: Record<string, number>;
+  hilightZeroCount: boolean;
 }
 export const JapanCountTable = (
-  { countData }: JapanCountTableProps
+  { countData, hilightZeroCount }: JapanCountTableProps
 ) => {
   const [scrolled, setScrolled] = useState(false);
   return (
@@ -16,7 +17,7 @@ export const JapanCountTable = (
       style={{ flexGrow: 1, userSelect: 'none' }}
       scrollbarSize={10}
       onScrollPositionChange={({ y }) => setScrolled(y !== 0)}>
-      <Table striped withColumnBorders>
+      <Table withColumnBorders>
         <Table.Thead className={cx(classes.header, { [classes.scrolled]: scrolled })}>
           <Table.Tr>
             <Table.Th>都道府県</Table.Th>
@@ -26,7 +27,7 @@ export const JapanCountTable = (
         <Table.Tbody>
           {
             Object.entries(countData).map(([key, value]) => (
-              <Table.Tr key={key}>
+              <Table.Tr key={key} bg={hilightZeroCount && value === 0 ? 'gray.3' : undefined}>
                 <Table.Td>
                   {
                     geoJson.features.find(

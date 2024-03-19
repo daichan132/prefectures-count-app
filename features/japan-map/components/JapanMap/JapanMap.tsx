@@ -10,11 +10,15 @@ import { Feature } from '../../types';
 interface JapanMapProps {
   initialCountData: Record<string, number>;
   color: string;
+  maxCount: number;
+  highlightZeroCount: boolean;
   onChange?: (name: string, count: number) => void;
 }
 export const JapanMap = React.memo((
   { initialCountData,
     color,
+    maxCount,
+    highlightZeroCount,
     onChange,
   }: JapanMapProps) => {
   const mounted = useMounted();
@@ -33,11 +37,21 @@ export const JapanMap = React.memo((
     onChange?.(name, countData[name]);
   };
 
+  const selectColor = useCallback((count: number) => {
+    if (count === 0 && highlightZeroCount) return 'var(--mantine-color-gray-3)';
+    return count ? color : 'white';
+  }, [color, highlightZeroCount]);
+
+  const selectOpacity = useCallback((count: number) => {
+    if (count === 0 && highlightZeroCount) return 1;
+    return count ? count * (1 / maxCount) : 0;
+  }, [maxCount, highlightZeroCount]);
+
   async function main() {
     const width = mapContainerRef.current?.offsetWidth || 0;
     const height = mapContainerRef.current?.offsetHeight || 0;
     const centerPos: [number, number] = [137.0, 38.2]; // 地図のセンター位置
-    const scale = 1200 * (Math.min(width, height) / 500);
+    const scale = 1300 * (Math.min(width, height) / 500);
 
     // 地図設定
     const projection = d3
@@ -66,13 +80,15 @@ export const JapanMap = React.memo((
       .attr('d', (d: any) => path(d))
       .attr('stroke', '#000000')
       .attr('stroke-width', 0.3)
-      .attr('fill', color)
-      .attr('cursor', 'pointer')
-      .attr('fill-opacity', (d: any) => {
+      .attr('fill', (d: any) =>
         // 透明度の設定
-        const count = countDataRef.current[d.properties.name.toLowerCase()];
-        return count ? count * 0.05 : 0;
-      })
+        selectColor(countDataRef.current[d.properties.name.toLowerCase()])
+      )
+      .attr('cursor', 'pointer')
+      .attr('fill-opacity', (d: any) =>
+        // 透明度の設定
+        selectOpacity(countDataRef.current[d.properties.name.toLowerCase()])
+      )
       .on('click', (event: MouseEvent, d: any) => {
         // クリックイベントを追加したい場合はこちらに記述
         const name = d.properties.name.toLowerCase();
@@ -80,10 +96,8 @@ export const JapanMap = React.memo((
 
         // カウントが更新された都道府県の領域のスタイルを更新
         d3.select(event.currentTarget as d3.BaseType)
-          .attr('fill-opacity', () => {
-            const count = countDataRef.current[name];
-            return count > 0 ? count * 0.05 : 0;
-          });
+          .attr('fill', selectColor(countDataRef.current[name]))
+          .attr('fill-opacity', () => selectOpacity(countDataRef.current[name]));
 
         // ラベルグループが既に存在するかチェック
         const labelGroup = d3.select('#label-group');
@@ -106,10 +120,8 @@ export const JapanMap = React.memo((
         const name = d.properties.name.toLowerCase();
         updateCount(name, false);
         d3.select(event.currentTarget as d3.BaseType)
-          .attr('fill-opacity', () => {
-            const count = countDataRef.current[name];
-            return count > 0 ? count * 0.05 : 0;
-          });
+          .attr('fill', selectColor(countDataRef.current[name]))
+          .attr('fill-opacity', () => selectOpacity(countDataRef.current[name]));
         const labelGroup = d3.select('#label-group');
         if (!labelGroup.empty()) {
           const newLabel = `${d.properties.name_ja}(${countDataRef.current[name]}人)`;
@@ -143,6 +155,7 @@ export const JapanMap = React.memo((
           .append('text')
           .attr('id', 'label-text')
           .style('user-select', 'none')
+          .attr('font-size', '20px')
           .text(label);
 
         // テキストのサイズから矩形のサイズを調整
@@ -160,7 +173,7 @@ export const JapanMap = React.memo((
           .attr('height', textSize.height + padding.y * 2);
 
         d3.select(this).attr('stroke-width', '3');
-        d3.select(this).attr('stroke', color);
+        d3.select(this).attr('stroke', '#666');
       })
       .on('mousemove', (event: MouseEvent) => {
         // テキストのサイズ情報を取得
@@ -177,24 +190,14 @@ export const JapanMap = React.memo((
           .select('#label-group')
           .attr('transform', `translate(${labelPos.x}, ${labelPos.y})`);
       })
-      .on('mouseout', function onMouseOut(this) {
+      .on('mouseout', function onMouseOut(this, event: MouseEvent, d: any) {
         // ラベルグループを削除
         svg.select('#label-group').remove();
-        d3.select(this).attr('fill', color);
+        d3.select(this).attr('fill', selectColor(countDataRef.current[d.properties.name.toLowerCase()]));
         d3.select(this).attr('stroke-width', '0.25');
         d3.select(this).attr('stroke', 'black');
       });
   }
-
-  useEffect(() => {
-    (async () => {
-      if (mounted) await main();
-    })();
-    return () => {
-      const target = document.getElementById('map-container');
-      if (target) target.innerHTML = '';
-    };
-  }, [mounted]);
 
   const cleanup = useCallback(() => {
     const target = document.getElementById('map-container');
@@ -209,7 +212,7 @@ export const JapanMap = React.memo((
     })();
     // eslint-disable-next-line consistent-return
     return () => cleanup();
-  }, [color, mounted, cleanup, viewportSize]);
+  }, [color, mounted, cleanup, viewportSize, maxCount, highlightZeroCount]);
 
   useEffect(() => {
     const mapContainer = mapContainerRef.current;
