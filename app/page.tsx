@@ -3,11 +3,20 @@
 import { AppShell, Blockquote, Center, ColorInput, NumberInput, Stack, Switch, Text } from '@mantine/core';
 import { useState } from 'react';
 import { IconInfoCircle } from '@tabler/icons-react';
+import { useLocalStorage } from '@mantine/hooks';
 import { JapanCountTable, JapanMap } from '@/features/japan-map';
 
 export default function HomePage() {
-  const [color, setColor] = useState('#f06595');
-  const [maxCount, setMaxCount] = useState<string | number>(10);
+  const [color, setColor] = useLocalStorage({
+    key: 'japan-map-color',
+    defaultValue: '#f06595',
+  });
+  const [maxCount, setMaxCount] = useLocalStorage<string | number>(
+    {
+      key: 'japan-map-max-count',
+      defaultValue: 5,
+    }
+  );
   const [checked, setChecked] = useState(false);
   const [countData, setCountData] = useState<Record<string, number>>(
     {
